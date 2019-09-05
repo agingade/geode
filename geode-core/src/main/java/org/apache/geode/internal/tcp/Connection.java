@@ -2801,7 +2801,12 @@ public class Connection implements Runnable {
     MsgReader msgReader = null;
     DMStats stats = owner.getConduit().getStats();
     final Version version = getRemoteVersion();
+    String threadName = Thread.currentThread().getName();
     try {
+      Thread.currentThread().setName(threadName + " Waiting for response from: "
+          + getRemoteAddress().getHost() + "("
+          + getRemoteAddress().getPort() + ")");
+
       msgReader = new MsgReader(this, ioFilter, version);
 
       Header header = msgReader.readHeader();
@@ -2869,6 +2874,7 @@ public class Connection implements Runnable {
       throw new ConnectionException(
           String.format("Unable to read direct ack because: %s", e));
     } finally {
+      Thread.currentThread().setName(threadName);
       stats.incProcessedMessages(1L);
       accessed();
       this.socketInUse = origSocketInUse;
